@@ -37,7 +37,7 @@ class KerichoForestAnalysis:
         # ═══════════════════════════════════════════════════════════════════
         # CONFIGURATION: Update this with your GEE username
         # ═══════════════════════════════════════════════════════════════════
-        GEE_USERNAME = 'chrysanthusjumaa23'  # ← CHANGE THIS TO YOUR USERNAME
+        GEE_USERNAME = 'ee-chrysanthusjumaa23'  # ← CHANGE THIS TO YOUR USERNAME
         
         # Base path for training assets
         base_path = f'users/{GEE_USERNAME}/kericho_training'
