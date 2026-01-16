@@ -66,27 +66,26 @@ st.markdown("""
 def initialize_gee():
     """Initialize Google Earth Engine."""
     try:
-        # Use high-volume endpoint for public data access
-        ee.Initialize(
-            project='ee-chrysanthusjumaa23',
-            opt_url='https://earthengine-highvolume.googleapis.com'
-        )
-        return True
-    except Exception as e:
-        # Try without high-volume endpoint
-        try:
+        # Check if running on Streamlit Cloud with service account
+        if 'gee' in st.secrets:
+            # Use service account from secrets
+            credentials = ee.ServiceAccountCredentials(
+                email=st.secrets['gee']['client_email'],
+                key_data=st.secrets['gee']['private_key']
+            )
+            ee.Initialize(
+                credentials=credentials,
+                project='ee-chrysanthusjumaa23'
+            )
+            return True
+        else:
+            # Local development - use default authentication
             ee.Initialize(project='ee-chrysanthusjumaa23')
             return True
-        except Exception as init_error:
-            st.error(f"⚠️ GEE Initialization failed: {init_error}")
-            st.warning("""
-            **Your assets may not be accessible without authentication.**
-
-            To fix this:
-            1. Make your GEE assets public, OR
-            2. Use a service account (see documentation)
-            """)
-            return False
+    except Exception as e:
+        st.error(f"⚠️ GEE Initialization failed: {e}")
+        st.info("Check service account credentials in Streamlit Cloud secrets")
+        return False
 @st.cache_resource
 def get_analysis_object():
     """Get cached analysis object."""
