@@ -726,6 +726,8 @@ else:
     elif analysis_mode == "🌤️ Climate Analysis":
         st.markdown("## 🌤️ Climate Trends Analysis")
         
+        st.info("ℹ️ **Note:** Temperature data (MODIS) is only available from 2000 onwards. Years before 2000 show precipitation data only.")
+        
         with st.spinner("Loading climate data..."):
             climate_data = analyzer.get_climate_trends()
         
@@ -880,6 +882,8 @@ else:
     elif analysis_mode == "📋 Comprehensive Report":
         st.markdown("## 📋 Comprehensive Analysis Report")
         st.markdown(f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
+        
+        st.info("ℹ️ **Note:** Temperature data (MODIS) is only available from 2000 onwards.")
         
         with st.spinner("Generating comprehensive report..."):
             # Fetch all data

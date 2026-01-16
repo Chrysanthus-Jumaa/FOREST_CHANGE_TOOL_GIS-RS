@@ -19,7 +19,7 @@ class KerichoForestAnalysis:
         self.years = [1995, 2005, 2015, 2024]
         
         # Load Kericho boundary
-        self.kericho = ee.FeatureCollection("projects/ee-celestakim019/assets/counties") \
+        self.kericho = ee.FeatureCollection("projects/ee-chrysanthusjumaa23/assets/counties") \
             .filter(ee.Filter.eq('COUNTY_NAM', 'KERICHO'))
         
         # Training data (imported geometries)
@@ -302,30 +302,37 @@ class KerichoForestAnalysis:
     def _load_climate_data(self):
         """Load climate data for all years."""
         chirps = ee.ImageCollection('UCSB-CHG/CHIRPS/DAILY')
-        modis_lst = ee.ImageCollection('MODIS/006/MOD11A2')
+        modis_lst = ee.ImageCollection('MODIS/061/MOD11A2')
         
         for year in self.years:
             start_date = ee.Date.fromYMD(year, 1, 1)
             end_date = ee.Date.fromYMD(year, 12, 31)
             
-            # Precipitation
+            # Precipitation (CHIRPS available from 1981)
             precip = chirps.filterDate(start_date, end_date) \
                 .filterBounds(self.kericho) \
                 .sum() \
                 .clip(self.kericho) \
                 .rename('precipitation')
             
-            # Temperature
-            temp = modis_lst.filterDate(start_date, end_date) \
-                .filterBounds(self.kericho) \
-                .select('LST_Day_1km') \
-                .mean() \
-                .multiply(0.02) \
-                .subtract(273.15) \
-                .clip(self.kericho) \
-                .rename('temperature')
-            
-            self.climate[year] = ee.Image.cat([precip, temp])
+            # Temperature (MODIS only available from 2000 onwards)
+            # For years before 2000, use a constant placeholder or skip
+            if year >= 2000:
+                temp = modis_lst.filterDate(start_date, end_date) \
+                    .filterBounds(self.kericho) \
+                    .select('LST_Day_1km') \
+                    .mean() \
+                    .multiply(0.02) \
+                    .subtract(273.15) \
+                    .clip(self.kericho) \
+                    .rename('temperature')
+                
+                self.climate[year] = ee.Image.cat([precip, temp])
+            else:
+                # For years before 2000, only store precipitation
+                # Create a dummy temperature band with None/masked values
+                temp = ee.Image.constant(-9999).clip(self.kericho).rename('temperature')
+                self.climate[year] = ee.Image.cat([precip, temp])
     
     def calculate_land_cover_areas(self) -> pd.DataFrame:
         """
@@ -466,9 +473,16 @@ class KerichoForestAnalysis:
                 maxPixels=1e13
             ).getInfo()
             
+            # Handle missing temperature data (years before 2000)
+            temp_value = temp_mean.get('temperature')
+            if temp_value is not None and temp_value != -9999:
+                temp_display = temp_value
+            else:
+                temp_display = None  # Will show as NaN in dataframe
+            
             results.append({
                 'Year': year,
-                'Temperature (°C)': temp_mean.get('temperature'),
+                'Temperature (°C)': temp_display,
                 'Precipitation (mm)': precip_mean.get('precipitation')
             })
         
