@@ -66,20 +66,27 @@ st.markdown("""
 def initialize_gee():
     """Initialize Google Earth Engine."""
     try:
-        # Try to initialize with default project
-        ee.Initialize(project='ee-chrysanthusjumaa23')
+        # Use high-volume endpoint for public data access
+        ee.Initialize(
+            project='ee-chrysanthusjumaa23',
+            opt_url='https://earthengine-highvolume.googleapis.com'
+        )
         return True
     except Exception as e:
+        # Try without high-volume endpoint
         try:
-            # If that fails, try authenticating first
-            ee.Authenticate()
             ee.Initialize(project='ee-chrysanthusjumaa23')
             return True
-        except Exception as auth_error:
-            st.error(f"GEE Authentication failed: {auth_error}")
-            st.info("Visit http://goo.gle/ee-auth for help with authentication")
-            return False
+        except Exception as init_error:
+            st.error(f"⚠️ GEE Initialization failed: {init_error}")
+            st.warning("""
+            **Your assets may not be accessible without authentication.**
 
+            To fix this:
+            1. Make your GEE assets public, OR
+            2. Use a service account (see documentation)
+            """)
+            return False
 @st.cache_resource
 def get_analysis_object():
     """Get cached analysis object."""
