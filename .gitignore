@@ -23,8 +23,9 @@ wheels/
 .installed.cfg
 *.egg
 
-# Streamlit
-.streamlit/
+# Streamlit secrets - DO NOT COMMIT
+.streamlit/secrets.toml
+.streamlit/*_secrets.toml
 
 # IDEs
 .vscode/
@@ -50,14 +51,6 @@ earthengine-credentials.json
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb
-
-# Data files (if you add any)
-data/
-*.csv
-*.geojson
-*.shp
-*.tif
 
 # Temporary files
 tmp/
